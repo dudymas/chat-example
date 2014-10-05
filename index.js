@@ -2,8 +2,10 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var home = process.env.HOME || '.';
+
 app.get('/', function(req, res){
-  res.sendfile('index.html');
+  res.sendfile(home + '/index.html');
 });
 
 io.on('connection', function(socket){
