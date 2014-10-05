@@ -1,1 +1,1 @@
-web: node index.js
+web: DEIS=1 node index.js
