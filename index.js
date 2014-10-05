@@ -12,6 +12,10 @@ io.on('connection', function(socket){
   });
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+var DEFAULT_PORT = '3000';
+var port = process.env.PORT || DEFAULT_PORT;
+
+http.listen(port, function(){
+  console.log('listening on *:'+port);
 });
+
