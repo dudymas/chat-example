@@ -1,19 +1,24 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var busboy = require('connect-busboy');
+
+require('./upload')(app);
 
 var home = process.env.DEIS && process.env.HOME || '.';
 
-app.use(busboy());
-
-app.use(function(req, res, next){
-  if (req.busboy){
-    req.busboy.on('file', function( fileMoniker, file, fileName, enc, mime ){
-    });
-    req.pipe(req.busboy);
-  }
-  next();
+app.post('/', function(req, res){
+  io.emit('chat message', req.fileName);
+  var imageData  = [];
+  console.log('reading file');
+  req.file.on('data', function(data){
+    console.log('processing');
+    imageData.push(data);
+  });
+  req.file.on('end', function(data){
+    console.log('sending file');
+    io.emit('image', {image: true, buffer: imageData});
+    res.send('success');
+  });
 });
 
 app.get('/', function(req, res){

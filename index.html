@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>chat</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
@@ -17,9 +17,9 @@
     <ul id="messages"></ul>
     <div id="forms">
     <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
+      <input id="m" autocomplete="off" /><button class="chat">Send</button>
     </form>
-    <form action="/upload" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+    <form action="">
       <input type="file" name="upload" value="upload"/>
     </form>
     </div>
@@ -27,13 +27,53 @@
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       var socket = io();
-      $('form').submit(function(){
+      $('button.chat').click(function(){
         socket.emit('chat message', $('#m').val());
         $('#m').val('');
         return false;
       });
+      $('input[name=upload]').change(function(){
+        if (this.files) {
+          for (var i = 0; i < this.files.length; i++)
+            uploadFile(this.files[i]);
+          this.value = '';
+        }
+      });
+      function uploadFile (file) {
+        var fdata = new FormData();
+        fdata.append('images[]', file);
+        $.ajax({
+          url: '',
+          data: fdata,
+          processData: false,
+          contentType: false,
+          type: 'POST'
+        });
+      }
+      function loadImageFromInfo (imgInfo) {
+        var buffer = imgInfo.buffer;
+        var info = {type: 'image/jpg'};
+        var blob = new Blob(buffer, info);
+        var imgURL = URL.createObjectURL(blob);
+        return {
+          buffer: buffer,
+          info: info,
+          blob: blob,
+          imgURL: imgURL
+        };
+      }
+      function createImage (imgInfo) {
+        var img_el = $('<img />');
+        window.img_data = loadImageFromInfo(imgInfo);
+        img_el.attr('src', img_data.imgURL);
+        return img_el;
+      }
       socket.on('chat message', function(msg){
         $('#messages').append($('<li>').text(msg));
+      });
+      socket.on('image', function(imgInfo){
+        var img_el = createImage(imgInfo);
+        $('#messages').append(img_el);
       });
     </script>
   </body>
